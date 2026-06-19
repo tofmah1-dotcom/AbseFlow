@@ -1,0 +1,6 @@
+{
+  "name": "AbseFlow",
+  "description": "Secure family finance tracker with nested categorizations, monthly analytics, family member switcher, and administrative global value adjustments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
