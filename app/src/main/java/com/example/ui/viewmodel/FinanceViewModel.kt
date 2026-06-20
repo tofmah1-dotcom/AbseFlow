@@ -2,8 +2,14 @@ package com.example.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
 import com.example.data.model.Transaction
+import com.example.data.model.CardItem
 import com.example.data.repository.TransactionRepository
+import com.example.data.repository.FirebaseManager
+import com.example.data.repository.UserProfile
+import com.example.data.repository.FamilyMemberProfile
+import com.example.data.repository.NestedFinanceCategory
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,6 +33,15 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
     val showAdminUnlockDialog = MutableStateFlow(false)
     val adminPasswordError = MutableStateFlow<String?>(null)
 
+    // Firebase flow state integration
+    val isFirebaseLoading = MutableStateFlow(false)
+    val firebaseError = MutableStateFlow<String?>(null)
+    val firestoreCards: StateFlow<List<CardItem>> = FirebaseManager.firestoreCards
+    val currentUserState: StateFlow<UserProfile?> = FirebaseManager.currentUserState
+    val firestoreFamilyMembers: StateFlow<List<FamilyMemberProfile>> = FirebaseManager.firestoreFamilyMembers
+    val firestoreCategories: StateFlow<List<NestedFinanceCategory>> = FirebaseManager.firestoreCategories
+    val isRealFirebase = FirebaseManager.isRealFirebaseActive
+
     // Selection filters
     val selectedMonth = MutableStateFlow(6) // Default to June (from current date metadata: June 2026)
     val selectedFamilyMember = MutableStateFlow("All") // Switcher filter: "All", "Dad", "Mom", "Son", "Daughter"
@@ -38,6 +53,28 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
     init {
         viewModelScope.launch {
             repository.seedDatabaseIfEmpty()
+        }
+        viewModelScope.launch {
+            FirebaseManager.currentUserState.collect { profile ->
+                if (profile != null) {
+                    userName.value = profile.displayName
+                    userEmail.value = profile.email
+                    isLoggedIn.value = true
+                    isAdminMode.value = FirebaseManager.customClaimsAdmin.value
+                } else {
+                    userName.value = ""
+                    userEmail.value = ""
+                    isLoggedIn.value = false
+                    isAdminMode.value = false
+                }
+            }
+        }
+        viewModelScope.launch {
+            FirebaseManager.customClaimsAdmin.collect { isAdmin ->
+                if (FirebaseManager.currentUserState.value != null) {
+                    isAdminMode.value = isAdmin
+                }
+            }
         }
     }
 
@@ -162,6 +199,115 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
         }
     }
 
+    // --- Core Firebase Auth & Firestore CRUD methods ---
+    fun registerWithFirebase(context: Context, email: String, pass: String, name: String) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            firebaseError.value = null
+            val result = FirebaseManager.signUp(context, email, pass, name)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                val profile = result.getOrThrow()
+                userName.value = profile.displayName
+                userEmail.value = profile.email
+                isLoggedIn.value = true
+                isAdminMode.value = (profile.role == "admin")
+                _uiEvents.emit("Sign-up successful! Saved on Firestore `/users/${profile.uid}`")
+            } else {
+                firebaseError.value = result.exceptionOrNull()?.message ?: "Sign-up failed."
+                _uiEvents.emit("Error: ${firebaseError.value}")
+            }
+        }
+    }
+
+    fun loginWithFirebase(context: Context, email: String, pass: String) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            firebaseError.value = null
+            val result = FirebaseManager.signIn(context, email, pass)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                val profile = result.getOrThrow()
+                userName.value = profile.displayName
+                userEmail.value = profile.email
+                isLoggedIn.value = true
+                isAdminMode.value = FirebaseManager.customClaimsAdmin.value
+                _uiEvents.emit("Access Granted! Logged in as ${profile.displayName} (${profile.role})")
+            } else {
+                firebaseError.value = result.exceptionOrNull()?.message ?: "Login failed."
+                _uiEvents.emit("Error: ${firebaseError.value}")
+            }
+        }
+    }
+
+    fun logoutFromFirebase() {
+        FirebaseManager.logout()
+        userName.value = ""
+        userEmail.value = ""
+        isLoggedIn.value = false
+        isAdminMode.value = false
+        viewModelScope.launch {
+            _uiEvents.emit("Success: Logged out securely.")
+        }
+    }
+
+    fun toggleCustomRoleClaimOnState(context: Context, targetUid: String, makeAdmin: Boolean) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            val result = FirebaseManager.toggleAdminClaimSimulated(context, targetUid, makeAdmin)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                val profile = result.getOrThrow()
+                val current = FirebaseManager.currentUserState.value
+                if (current != null && current.uid == targetUid) {
+                    isAdminMode.value = makeAdmin
+                }
+                _uiEvents.emit("Claims updated! Custom claim { admin: ${makeAdmin} } is now active.")
+            } else {
+                _uiEvents.emit("Claims update failed: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    fun createFirestoreCard(context: Context, title: String, desc: String, bal: Double) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            val result = FirebaseManager.createCard(context, title, desc, bal)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                _uiEvents.emit("Card successfully inserted in `/cards` collection.")
+            } else {
+                _uiEvents.emit("Access Denied: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    fun updateFirestoreCard(context: Context, card: CardItem) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            val result = FirebaseManager.updateCard(context, card)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                _uiEvents.emit("Card document successfully updated.")
+            } else {
+                _uiEvents.emit("Access Denied: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    fun deleteFirestoreCard(context: Context, cardId: String) {
+        viewModelScope.launch {
+            isFirebaseLoading.value = true
+            val result = FirebaseManager.deleteCard(context, cardId)
+            isFirebaseLoading.value = false
+            if (result.isSuccess) {
+                _uiEvents.emit("Card document deleted.")
+            } else {
+                _uiEvents.emit("Access Denied: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
     fun handleAdminUnlock(pass: String) {
         viewModelScope.launch {
             if (pass == "admin123" || pass == "8888") {
@@ -205,7 +351,11 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
                 description = description.ifBlank { "$category Transaction" },
                 familyMember = familyMember
             )
-            repository.insertTransaction(tx)
+            val generatedId = repository.insertTransaction(tx)
+            val finalTx = tx.copy(id = generatedId)
+            if (FirebaseManager.isRealFirebaseActive) {
+                FirebaseManager.saveTransactionToFirestore(finalTx)
+            }
             _uiEvents.emit("Transaction recorded successfully!")
         }
     }
@@ -216,7 +366,11 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
                 _uiEvents.emit("Amount must be greater than zero.")
                 return@launch
             }
-            repository.insertTransaction(tx)
+            val generatedId = repository.insertTransaction(tx)
+            val finalTx = tx.copy(id = generatedId)
+            if (FirebaseManager.isRealFirebaseActive) {
+                FirebaseManager.saveTransactionToFirestore(finalTx)
+            }
             _uiEvents.emit("Transaction posted.")
         }
     }
@@ -224,6 +378,9 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
     fun updateTransaction(tx: Transaction) {
         viewModelScope.launch {
             repository.updateTransaction(tx)
+            if (FirebaseManager.isRealFirebaseActive) {
+                FirebaseManager.saveTransactionToFirestore(tx)
+            }
             _uiEvents.emit("Transaction modified.")
         }
     }
@@ -231,6 +388,9 @@ class FinanceViewModel(private val repository: TransactionRepository) : ViewMode
     fun deleteTransaction(tx: Transaction) {
         viewModelScope.launch {
             repository.deleteTransaction(tx)
+            if (FirebaseManager.isRealFirebaseActive) {
+                FirebaseManager.deleteTransactionFromFirestore(tx.id)
+            }
             _uiEvents.emit("Transaction deleted.")
         }
     }

@@ -18,6 +18,9 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     
+    // Initialize Firebase
+    com.example.data.repository.FirebaseManager.initialize(this)
+
     // Initialize standard single-instance Room dependencies natively
     val database = AppDatabase.getDatabase(this)
     val repository = TransactionRepository(database.transactionDao())

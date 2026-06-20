@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Checks if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Checks if user is accessing their own profile
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper: Checks if the user has custom claims 'admin' set to true
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.admin == true || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
+    }
+
+    // --- Users Profiles Collection Rules ---
+    match /users/{userId} {
+      // Users can only read, create, or update their own profile document
+      allow read, write: if isOwner(userId);
+    }
+
+    // --- Cards Collection Rules ---
+    match /cards/{cardId} {
+      // Any authenticated user can read cards (role regular or admin)
+      allow read: if isAuthenticated();
+      
+      // ONLY authenticated users with administrative privileges can write (create, update, delete)
+      allow write, create, update, delete: if isAdmin();
+    }
+  }
+}

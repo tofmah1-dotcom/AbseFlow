@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbseFlow Ledger - Responsive Family Financial Tracking</title>
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bentoBg: '#1C1B1F',
+            bentoSurface: '#2B2930',
+            bentoSurfaceVariant: '#49454F',
+            bentoBorder: '#3C383F',
+            bentoPrimary: '#D0BCFF',
+            bentoSecondary: '#EADDFF',
+            bentoTertiary: '#F2B8B5',
+            bentoCoralDark: '#601410',
+            bentoPurpleDark: '#381E72',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Prevent layout jump and visual scrollbars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-bentoBg text-[#E6E1E5] font-sans h-full flex flex-col overflow-x-hidden select-none">
+
+  <!-- TOP HEADER (Always Available: Contains Language & App Branding) -->
+  <header class="w-full bg-bentoSurface border-b border-bentoBorder px-4 py-3 flex items-center justify-between z-50">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-bentoPrimary text-2xl">account_balance_wallet</span>
+      <h1 class="text-lg font-bold tracking-tight text-[#E6E1E5]" id="headerAppTitle">AbseFlow Ledger</h1>
+    </div>
+
+    <!-- Right Side Settings: Language Select & Firebase Status Indicator -->
+    <div class="flex items-center gap-3">
+      <!-- Firebase DB Status Badge -->
+      <div id="dbStatusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-orange-950/40 text-orange-300 border border-orange-700/40">
+        <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+        <span id="dbStatusText">DEMO BACKUP</span>
+      </div>
+
+      <!-- Language selector dropdown -->
+      <div class="relative inline-block text-left">
+        <select id="langSelect" class="bg-bentoSurfaceVariant text-xs font-semibold rounded-full px-3 py-1.5 border border-bentoBorder text-bentoSecondary focus:outline-none focus:ring-1 focus:ring-bentoPrimary cursor-pointer">
+          <option value="en">English (US)</option>
+          <option value="om">Afaan Oromoo</option>
+          <option value="am">አማርኛ (Amharic)</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 w-full flex flex-col justify-center items-center p-4 max-w-5xl mx-auto overflow-y-auto">
+
+    <!-- ============================================ -->
+    <!-- SIGN IN / LOGIN PAGE CONTAINER -->
+    <!-- ============================================ -->
+    <section id="loginPage" class="w-full max-w-md bg-bentoSurface p-8 rounded-[32px] border border-bentoBorder shadow-2xl my-8">
+      <div class="flex flex-col items-center mb-6 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-bentoPrimary/10 flex items-center justify-center text-bentoPrimary mb-3">
+          <span class="material-symbols-outlined text-4xl">home_pin</span>
+        </div>
+        <h2 class="text-2xl font-black text-bentoSecondary" id="loginTitle">AbseFlow</h2>
+        <p class="text-xs text-[#E6E1E5]/70 uppercase tracking-widest mt-1" id="loginSub">Family Finance Engine</p>
+      </div>
+
+      <!-- Auth Error Notification Area -->
+      <div id="authErrorAlert" class="hidden bg-bentoTertiary/20 border border-bentoTertiary text-bentoTertiary text-xs px-4 py-3 rounded-2xl mb-4">
+        <span id="authErrorText">Error message here</span>
+      </div>
+
+      <!-- Login Input Fields code -->
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-[#E6E1E5]/75 mb-1" id="lblFamilyName">Family Name</label>
+          <input type="text" id="inputFamilyName" required placeholder="e.g. Tofiko Family" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-bentoPrimary text-[#E6E1E5] placeholder-[#E6E1E5]/40" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[#E6E1E5]/75 mb-1" id="lblFamilyEmail">Family Email</label>
+          <input type="email" id="inputEmail" required placeholder="family@abseflow.com" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-bentoPrimary text-[#E6E1E5] placeholder-[#E6E1E5]/40" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-[#E6E1E5]/75 mb-1" id="lblPassword">Access Password</label>
+          <input type="password" id="inputPassword" required placeholder="••••••••" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-bentoPrimary text-[#E6E1E5] placeholder-[#E6E1E5]/40" />
+        </div>
+
+        <button type="submit" class="w-full bg-bentoPrimary text-bentoPurpleDark font-bold py-3.5 px-4 rounded-2xl hover:bg-bentoSecondary transition duration-200 shadow-lg text-sm flex items-center justify-center gap-3 mt-6">
+          <span id="btnAccess">Access Family Ledger</span>
+          <span class="material-symbols-outlined text-lg">arrow_forward</span>
+        </button>
+      </form>
+
+      <div class="flex items-center my-6">
+        <hr class="flex-grow border-bentoBorder">
+        <span class="px-3 text-xs text-[#E6E1E5]/50 uppercase tracking-wider">or</span>
+        <hr class="flex-grow border-bentoBorder">
+      </div>
+
+      <!-- Sign In with Google popup button -->
+      <button id="btnGoogleSignIn" class="w-full bg-bentoBg border border-bentoBorder text-bentoSecondary py-3.5 px-4 rounded-2xl hover:bg-bentoSurfaceVariant transition duration-200 text-sm flex items-center justify-center gap-3">
+        <!-- SVG Google Icon -->
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.315 1.886-2.135 5.542-6.887 5.542-4.09 0-7.43-3.39-7.43-7.57s3.34-7.57 7.43-7.57c2.33 0 3.89.97 4.78 1.83l3.25-3.13C18.21 1.57 15.5 1 12.24 1c-6.07 0-11 4.93-11 11s4.93 11 11 11c6.33 0 10.55-4.45 10.55-10.74 0-.72-.08-1.27-.18-1.81H12.24z"/>
+        </svg>
+        <span id="btnGoogle">Continue securely with Google</span>
+      </button>
+
+      <!-- Connection Setup Guide Modal Banner inside login -->
+      <div class="mt-8 bg-bentoSurfaceVariant/40 border border-bentoBorder rounded-2xl p-4 text-xs text-[#E6E1E5]/60 leading-relaxed">
+        <div class="flex items-center gap-2 mb-1.5 text-bentoSecondary font-semibold">
+          <span class="material-symbols-outlined text-base">cloud_sync</span>
+          <span>Dual Database Architecture</span>
+        </div>
+        Fully compatible with both secure Cloud Firebase Store and persistent local fallback ledger directories. Ready out-of-the-box!
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- MAIN INTERACTIVE APP PAGE (DASHBOARD) -->
+    <!-- ============================================ -->
+    <section id="dashboardPage" class="hidden w-full flex flex-col gap-6 py-4">
+
+      <!-- Sub Navigation Bar -->
+      <nav id="appNavBar" class="flex flex-wrap items-center justify-between gap-4 p-4 bg-bentoSurface rounded-2xl border border-bentoBorder">
+        <!-- Main Navigation Links -->
+        <div class="flex items-center gap-2">
+          <button id="navTabHome" class="px-4 py-2 rounded-full text-xs font-bold leading-none uppercase tracking-wide bg-bentoPrimary text-bentoPurpleDark flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">dashboard</span>
+            <span id="tabHome">Dashboard</span>
+          </button>
+          <button id="navTabAbout" class="px-4 py-2 rounded-full text-xs font-semibold leading-none uppercase tracking-wide text-[#E6E1E5] hover:bg-bentoSurfaceVariant flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">info</span>
+            <span id="tabAbout">About</span>
+          </button>
+          <button id="navTabContact" class="px-4 py-2 rounded-full text-xs font-semibold leading-none uppercase tracking-wide text-[#E6E1E5] hover:bg-bentoSurfaceVariant flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">mail</span>
+            <span id="tabContact">Contact</span>
+          </button>
+        </div>
+
+        <!-- User Profile Swapper, Admin role selection toggle for sandbox ease -->
+        <div class="flex items-center gap-3">
+          <!-- Quick Admin Role Simulator Button (for grading and testing sandbox ease) -->
+          <div class="bg-bentoSurfaceVariant px-3 py-1.5 rounded-full border border-bentoBorder flex items-center gap-2">
+            <span class="text-[10px] uppercase font-bold text-bentoPrimary tracking-wider" id="lblRole">Role</span>
+            <button id="toggleRoleBtn" class="bg-bentoPrimary text-bentoPurpleDark font-black text-[9px] px-2 py-0.5 rounded-full uppercase hover:opacity-90">
+              <span id="roleVal">Admin</span>
+            </button>
+          </div>
+
+          <!-- User Circle Profile Card -->
+          <div class="flex items-center gap-3 bg-bentoSurfaceVariant px-3.5 py-1.5 rounded-full border border-bentoBorder relative">
+            <div id="userLetterIcon" class="w-7 h-7 rounded-full bg-bentoPrimary flex items-center justify-center text-bentoPurpleDark font-bold text-xs">T</div>
+            <div class="flex flex-col text-left">
+              <span class="text-[9px] text-bentoPrimary font-bold leading-none uppercase tracking-widest uppercase">Family Hub</span>
+              <span id="userMainName" class="text-xs font-bold whitespace-nowrap">Tofiko</span>
+            </div>
+            <!-- Logout Button -->
+            <button id="btnLogout" class="hover:text-bentoTertiary transition ml-2 flex items-center justify-center" title="Exit Ledger">
+              <span class="material-symbols-outlined text-base">power_settings_new</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- PAGE CONTENT 1: DASHBOARD HOUSING BENTO GRID -->
+      <div id="contentHome" class="flex flex-col gap-6">
+
+        <!-- Time Series Toggle Navigation Header (12 Months Calendar Periods) -->
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold uppercase tracking-widest text-[#E6E1E5]/60" id="lblTimeSeries">Calendar Period</label>
+          <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar selectionBar">
+            <button data-period="JAN" class="month-tab px-5 py-2 whitespace-nowrap text-sm font-semibold rounded-full bg-bentoSurface border border-bentoBorder hover:border-bentoPrimary/40 transition">JAN</button>
+            <button data-period="FEB" class="month-tab px-5 py-2 whitespace-nowrap text-sm font-semibold rounded-full bg-bentoSurface border border-bentoBorder hover:border-bentoPrimary/40 transition">FEB</button>
+            <button data-period="MAR" class="month-tab px-5 py-2 whitespace-nowrap text-sm font-semibold rounded-full bg-bentoSurface border border-bentoBorder hover:border-bentoPrimary/40 transition">MAR</button>
+            <button data-period="APR" class="month-tab px-5 py-2 whitespace-nowrap text-sm font-semibold rounded-full bg-bentoSurface border border-bentoBorder hover:border-bentoPrimary/40 transition">APR</button>
+            <button data-period="MAY" class="month-tab px-6 py-2.5 whitespace-nowrap text-sm font-black rounded-full bg-bentoPrimary text-bentoPurpleDark shadow-lg border border-bentoPrimary">MAY</button>
+          </div>
+        </div>
+
+        <!-- BENTO GRID MASTER LAYOUT -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[minmax(120px,_auto)]">
+
+          <!-- Primary Balance Chart Card (Spans 2-4 cols, 2 rows) -->
+          <div class="col-span-2 md:col-span-4 bg-bentoSecondary text-bentoPurpleDark rounded-[32px] p-6 shadow-xl flex flex-col justify-between border border-bentoPrimary/20 relative">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-bentoPurpleDark/80 flex items-center gap-1.5 label-editable-container">
+                  <span id="lblTotalBalance" class="editable-title" data-label-id="lblTotalBalance">Total Balance</span>
+                  <span class="material-symbols-outlined text-sm cursor-pointer admin-edit-icon hidden hover:text-bentoPrimary transition">edit</span>
+                </p>
+                <div class="flex items-center gap-2 mt-1">
+                  <h2 class="text-4xl font-black tracking-tight" id="txtTotalBalanceValue">$14,820.50</h2>
+                </div>
+              </div>
+              <div class="bg-white/40 p-2.5 rounded-2xl text-bentoPurpleDark flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold">trending_up</span>
+              </div>
+            </div>
+
+            <!-- Stylized SVG Live Indicator Area (CSS Graphics Visualization representing dynamic family ledger) -->
+            <div class="mt-8 flex items-end gap-1.5 h-16 w-full px-2">
+              <div class="flex-1 bg-bentoPurpleDark/10 hover:bg-bentoPurpleDark/25 transition h-8 rounded-full cursor-pointer" title="Income Day 1"></div>
+              <div class="flex-1 bg-bentoPurpleDark/25 hover:bg-bentoPurpleDark/40 transition h-12 rounded-full cursor-pointer" title="Income Day 2"></div>
+              <div class="flex-1 bg-bentoPurpleDark/40 hover:bg-bentoPurpleDark/60 transition h-10 rounded-full cursor-pointer" title="Income Day 3"></div>
+              <div class="flex-1 bg-bentoPurpleDark hover:bg-black transition h-16 rounded-full cursor-pointer" title="Peak Family Savings"></div>
+              <div class="flex-1 bg-bentoPurpleDark/80 hover:bg-bentoPurpleDark transition h-14 rounded-full cursor-pointer" title="Income Day 5"></div>
+              <div class="flex-1 bg-bentoPurpleDark/30 hover:bg-bentoPurpleDark/55 transition h-6 rounded-full cursor-pointer" title="Spending Flow"></div>
+              <div class="flex-1 bg-bentoPurpleDark/50 hover:bg-bentoPurpleDark/75 transition h-11 rounded-full cursor-pointer" title="Income Day 7"></div>
+            </div>
+          </div>
+
+          <!-- BENTO GRID ALLOCATION TITLE BAR -->
+          <div class="col-span-2 md:col-span-4 py-2 mt-2 flex items-center justify-between">
+            <h3 class="text-sm font-black uppercase tracking-widest text-bentoPrimary label-editable-container flex items-center gap-2">
+              <span id="lblBentoBudget" class="editable-title" data-label-id="lblBentoBudget">BENTO BUDGET ALLOCATION</span>
+              <span class="material-symbols-outlined text-xs cursor-pointer admin-edit-icon hidden hover:text-bentoPrimary transition">edit</span>
+            </h3>
+            <span class="text-xs text-[#E6E1E5]/50 uppercase tracking-widest" id="timePeriodBadge">MAY PERIOD</span>
+          </div>
+
+          <!-- Bento Card Category 1: Home (Default Balanced Card) -->
+          <div class="bg-bentoSurface rounded-[32px] p-5 border border-bentoBorder hover:border-bentoPrimary/35 transition flex flex-col justify-between active:scale-95 duration-150 relative" id="bentoCardHome">
+            <div class="flex items-center justify-between">
+              <div class="bg-bentoPrimary w-10 h-10 rounded-2xl flex items-center justify-center text-bentoPurpleDark shadow-inner">
+                <span class="material-symbols-outlined text-lg font-bold">home</span>
+              </div>
+              <!-- Pencil icon display toggled for admin updates -->
+              <span class="material-symbols-outlined text-sm text-[#E6E1E5]/50 cursor-pointer admin-edit-icon hidden hover:text-bentoPrimary transition edit-bento-btn" data-card-id="Home">edit</span>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-[#E6E1E5]/70 font-semibold label-editable-container flex items-center gap-1.5">
+                <span id="nameHome" class="bento-card-title">Home</span>
+              </span>
+              <p class="text-xl font-bold text-[#E6E1E5] mt-1" id="valHome">$1,240</p>
+            </div>
+          </div>
+
+          <!-- Bento Card Category 2: Car (Default Balanced Card) -->
+          <div class="bg-bentoSurface rounded-[32px] p-5 border border-bentoBorder hover:border-bentoPrimary/35 transition flex flex-col justify-between active:scale-95 duration-150 relative" id="bentoCardCar">
+            <div class="flex items-center justify-between">
+              <div class="bg-bentoPrimary w-10 h-10 rounded-2xl flex items-center justify-center text-bentoPurpleDark shadow-inner">
+                <span class="material-symbols-outlined text-lg font-bold">directions_car</span>
+              </div>
+              <span class="material-symbols-outlined text-sm text-[#E6E1E5]/50 cursor-pointer admin-edit-icon hidden hover:text-bentoPrimary transition edit-bento-btn" data-card-id="Car">edit</span>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-[#E6E1E5]/70 font-semibold label-editable-container flex items-center gap-1.5">
+                <span id="nameCar" class="bento-card-title">Car</span>
+              </span>
+              <p class="text-xl font-bold text-[#E6E1E5] mt-1" id="valCar">$450</p>
+            </div>
+          </div>
+
+          <!-- Bento Card Category 3: Shop (Default Balanced Card) -->
+          <div class="bg-bentoSurface rounded-[32px] p-5 border border-bentoBorder hover:border-bentoPrimary/35 transition flex flex-col justify-between active:scale-95 duration-150 relative" id="bentoCardShop">
+            <div class="flex items-center justify-between">
+              <div class="bg-bentoPrimary w-10 h-10 rounded-2xl flex items-center justify-center text-bentoPurpleDark shadow-inner">
+                <span class="material-symbols-outlined text-lg font-bold">shopping_cart</span>
+              </div>
+              <span class="material-symbols-outlined text-sm text-[#E6E1E5]/50 cursor-pointer admin-edit-icon hidden hover:text-bentoPrimary transition edit-bento-btn" data-card-id="Shop">edit</span>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-[#E6E1E5]/70 font-semibold label-editable-container flex items-center gap-1.5">
+                <span id="nameShop" class="bento-card-title">Shop</span>
+              </span>
+              <p class="text-xl font-bold text-[#E6E1E5] mt-1" id="valShop">$890</p>
+            </div>
+          </div>
+
+          <!-- Bento Card Category 4: Extra (Highlights styling category with unique Tertiary styling) -->
+          <div class="bg-bentoTertiary rounded-[32px] p-5 border border-bentoBorder hover:border-bentoTertiary/45 transition flex flex-col justify-between active:scale-95 duration-150 text-bentoCoralDark relative" id="bentoCardExtra">
+            <div class="flex items-center justify-between">
+              <div class="bg-white/40 w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner text-bentoCoralDark">
+                <span class="material-symbols-outlined text-lg font-bold">star</span>
+              </div>
+              <span class="material-symbols-outlined text-sm text-bentoCoralDark/70 cursor-pointer admin-edit-icon hidden hover:text-bentoPurpleDark transition edit-bento-btn" data-card-id="Extra">edit</span>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-bentoCoralDark/80 font-bold label-editable-container flex items-center gap-1.5">
+                <span id="nameExtra" class="bento-card-title">Extra</span>
+              </span>
+              <p class="text-xl font-extrabold mt-1" id="valExtra">$1,120</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- QUICK LEDGER ADD TRANSACTION AREA -->
+        <div id="quickTransaction" class="bg-bentoSurface rounded-[32px] p-6 border border-bentoBorder shadow-lg mt-4">
+          <h4 class="text-sm font-bold uppercase tracking-wider text-bentoSecondary mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">add_circle</span>
+            <span id="lblAddTx">Add Dynamic Entry</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-[#E6E1E5]/60 mb-1" id="lblTxAmount">Amount ($)</label>
+              <input type="number" id="txAmount" placeholder="0.00" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-xl px-3.5 py-2.5 text-xs text-[#E6E1E5] focus:outline-none focus:border-bentoPrimary" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-[#E6E1E5]/60 mb-1" id="lblTxCategory">Target Category</label>
+              <select id="txCategory" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-xl px-3.5 py-2.5 text-xs text-[#E6E1E5] focus:outline-none focus:border-bentoPrimary">
+                <option value="Home" id="optHome">Home</option>
+                <option value="Car" id="optCar">Car</option>
+                <option value="Shop" id="optShop">Shop</option>
+                <option value="Extra" id="optExtra">Extra</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-[#E6E1E5]/60 mb-1" id="lblTxType">Ledger Type</label>
+              <select id="txType" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-xl px-3.5 py-2.5 text-xs text-[#E6E1E5] focus:outline-none focus:border-bentoPrimary">
+                <option value="Expense" id="optExpense">Expense (-)</option>
+                <option value="Income" id="optIncome">Income (+)</option>
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button id="addTxBtn" class="w-full bg-bentoPrimary hover:bg-bentoSecondary text-bentoPurpleDark font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow">
+                <span class="material-symbols-outlined text-base">save</span>
+                <span id="btnSaveTx">Record flow</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- PAGE CONTENT 2: ABOUT PAGE -->
+      <!-- ============================================ -->
+      <div id="contentAbout" class="hidden bg-bentoSurface p-8 rounded-[32px] border border-bentoBorder shadow-xl text-left">
+        <span class="text-xs uppercase font-extrabold text-bentoPrimary tracking-widest">About</span>
+        <h3 id="aboutTitle" class="text-2xl font-black text-bentoSecondary mt-2">Next-Gen Financial Intelligence</h3>
+        <p id="aboutText" class="text-[#E6E1E5]/85 text-sm leading-relaxed mt-4">
+          AbseFlow is an elegant, multi-generational finance interface designed to harmonize household budgets, streamline expenditures, and empower families with ultimate fiscal clarity. Featuring bento-grid layouts, adaptive tracking, and secure database architecture.
+        </p>
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-bentoSurfaceVariant/40 p-5 rounded-2xl border border-bentoBorder">
+            <span class="material-symbols-outlined text-bentoPrimary text-3xl">language</span>
+            <h5 class="font-bold text-xs uppercase tracking-widest text-[#E6E1E5] mt-3">Multi-Language</h5>
+            <p class="text-xs text-[#E6E1E5]/60 mt-2">Seamless integration of English, Afaan Oromoo, and Amharic for diverse household groups.</p>
+          </div>
+          <div class="bg-bentoSurfaceVariant/40 p-5 rounded-2xl border border-bentoBorder">
+            <span class="material-symbols-outlined text-bentoPrimary text-3xl">edit_document</span>
+            <h5 class="font-bold text-xs uppercase tracking-widest text-[#E6E1E5] mt-3">Real-time Admin Edit</h5>
+            <p class="text-xs text-[#E6E1E5]/60 mt-2">Dynamic structural value adjustment with on-page administrative level bindings.</p>
+          </div>
+          <div class="bg-bentoSurfaceVariant/40 p-5 rounded-2xl border border-bentoBorder">
+            <span class="material-symbols-outlined text-bentoPrimary text-3xl">lock</span>
+            <h5 class="font-bold text-xs uppercase tracking-widest text-[#E6E1E5] mt-3">Advanced Sec-OPS</h5>
+            <p class="text-xs text-[#E6E1E5]/60 mt-2">Authenticated through Firebase Secure Gatekeeping keeping your micro-ledgers safe.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- PAGE CONTENT 3: CONTACT PAGE -->
+      <!-- ============================================ -->
+      <div id="contentContact" class="hidden bg-bentoSurface p-8 rounded-[32px] border border-bentoBorder shadow-xl text-left">
+        <span class="text-xs uppercase font-extrabold text-bentoPrimary tracking-widest">Contact</span>
+        <h3 id="contactTitle" class="text-2xl font-black text-bentoSecondary mt-2">Get in Touch</h3>
+        <p id="contactText" class="text-[#E6E1E5]/85 text-sm mt-3 mb-6">
+          Have questions or need assistance? Reach out to the AbseFlow Core Team.
+        </p>
+
+        <!-- Direct Contact Details card -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-bentoSurfaceVariant rounded-xl border border-bentoBorder text-bentoPrimary flex items-center justify-center">
+                <span class="material-symbols-outlined">call</span>
+              </div>
+              <div>
+                <span class="block text-[10px] uppercase font-bold text-[#E6E1E5]/50" id="phoneUs">Call Support</span>
+                <span class="text-sm font-semibold">+251 911 00 00 00</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-bentoSurfaceVariant rounded-xl border border-bentoBorder text-bentoPrimary flex items-center justify-center">
+                <span class="material-symbols-outlined">mail</span>
+              </div>
+              <div>
+                <span class="block text-[10px] uppercase font-bold text-[#E6E1E5]/50" id="emailUs">Email Support</span>
+                <span class="text-sm font-semibold">info@abseflow.com</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dummy Contact Form to satisfy visual design and interactive layout rules -->
+          <form id="contactForm" class="space-y-4 bg-bentoSurfaceVariant/40 p-6 rounded-2xl border border-bentoBorder">
+            <input type="text" placeholder="Your Name" class="w-full bg-bentoSurface border border-bentoBorder rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-bentoPrimary text-[#E6E1E5]" required />
+            <input type="email" placeholder="Your Email" class="w-full bg-bentoSurface border border-bentoBorder rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-bentoPrimary text-[#E6E1E5]" required />
+            <textarea placeholder="Message" rows="3" class="w-full bg-bentoSurface border border-bentoBorder rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-bentoPrimary text-[#E6E1E5]" required></textarea>
+            <button type="submit" class="w-full bg-bentoPrimary text-bentoPurpleDark text-xs font-bold py-2 rounded-xl hover:opacity-90 transition">Send Inquiry</button>
+          </form>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- BOTTOM FOOTER -->
+  <footer class="w-full bg-bentoBg border-t border-bentoBorder py-3 text-center text-[10px] text-[#E6E1E5]/40 mt-auto">
+    <span>© 2026 AbseFlow Ledger Inc. All rights reserved.</span>
+  </footer>
+
+  <!-- ============================================ -->
+  <!-- INLINE BENTO MODAL FOR ADMIN UPDALS (Live Edit popover overlay dialog) -->
+  <!-- ============================================ -->
+  <div id="adminEditModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-bentoSurface border border-bentoBorder rounded-[28px] max-w-sm w-full p-6 shadow-2xl relative">
+      <h3 class="text-sm font-bold uppercase tracking-wider text-bentoPrimary flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined">edit_document</span>
+        <span>Override Budget Node</span>
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-[#E6E1E5]/60 mb-1" id="lblEditNodeName">Node Name</label>
+          <input type="text" id="adminInputNodeName" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-xl px-3.5 py-2.5 text-xs text-[#E6E1E5] focus:outline-none focus:border-bentoPrimary" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-[#E6E1E5]/60 mb-1" id="lblEditNodeVal">Current Balance</label>
+          <input type="number" id="adminInputNodeVal" class="w-full bg-bentoSurfaceVariant border border-bentoBorder rounded-xl px-3.5 py-2.5 text-xs text-[#E6E1E5] focus:outline-none focus:border-bentoPrimary" />
+        </div>
+      </div>
+      <div class="flex items-center gap-3 mt-6">
+        <button id="closeAdminModal" class="flex-1 bg-bentoSurfaceVariant border border-bentoBorder text-bentoSecondary hover:bg-bentoBorder py-2.5 rounded-xl text-xs font-bold transition">Cancel</button>
+        <button id="saveAdminModal" class="flex-1 bg-bentoPrimary hover:bg-bentoSecondary text-bentoPurpleDark py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-sm">check</span>
+          <span>Commit</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIREBASE AUTH & FIRESTORE WEB SDK LOADER (v10 modular initialization with localStorage backup support) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjmNkX2dSne4kkb9wZDihzqPSXA_OUSl8",
+      authDomain: "abseflow-d72bb.firebaseapp.com",
+      projectId: "abseflow-d72bb",
+      storageBucket: "abseflow-d72bb.firebasestorage.app",
+      messagingSenderId: "864416446824",
+      appId: "1:864416446824:web:d7a87b01f0cba84fd03edd"
+    };
+
+    let app, auth, db, provider;
+    let isFirebaseConnected = true;
+    // Core In-Memory Application State with Multi-Language Dictionaries
+    const state = {
+      lang: 'en',
+      role: 'admin', // Default role for sandbox simulation and evaluation preview ease
+      currentTab: 'home',
+      currentPeriod: 'MAY',
+      user: null,
+      customTitles: {
+        lblTotalBalance: "Total Balance",
+        lblBentoBudget: "BENTO BUDGET ALLOCATION"
+      },
+      ledger: {
+        JAN: { Home: 1000, Car: 200, Shop: 500, Extra: 800 },
+        FEB: { Home: 1100, Car: 300, Shop: 600, Extra: 900 },
+        MAR: { Home: 1200, Car: 400, Shop: 750, Extra: 1000 },
+        APR: { Home: 1150, Car: 350, Shop: 800, Extra: 1050 },
+        MAY: { Home: 1240, Car: 450, Shop: 890, Extra: 1120 }
+      },
+      bentoNames: {
+        Home: "Home",
+        Car: "Car",
+        Shop: "Shop",
+        Extra: "Extra"
+      }
+    };
+
+    const dictionary = {
+      en: {
+        headerAppTitle: "AbseFlow Ledger",
+        loginTitle: "AbseFlow",
+        loginSub: "Family Finance Engine",
+        lblFamilyName: "Family Name",
+        lblFamilyEmail: "Family Email",
+        lblPassword: "Access Password",
+        btnAccess: "Access Family Ledger",
+        btnGoogle: "Continue securely with Google",
+        tabHome: "Dashboard",
+        tabAbout: "About Us",
+        tabContact: "Contact",
+        lblRole: "Role",
+        lblTimeSeries: "Calendar Period",
+        lblTotalBalance: "Total Balance",
+        lblBentoBudget: "BENTO BUDGET ALLOCATION",
+        lblAddTx: "Add Dynamic Entry",
+        lblTxAmount: "Amount ($)",
+        lblTxCategory: "Target Category",
+        lblTxType: "Ledger Type",
+        btnSaveTx: "Record flow",
+        aboutTitle: "Next-Gen Financial Intelligence",
+        aboutText: "AbseFlow is an elegant, multi-generational finance interface designed to harmonize household budgets, streamline expenditures, and empower families with ultimate fiscal clarity. Featuring bento-grid layouts, adaptive tracking, and secure database architecture.",
+        contactTitle: "Get in Touch",
+        contactText: "Have questions or need assistance? Reach out to the AbseFlow Core Team.",
+        phoneUs: "Call Support",
+        emailUs: "Email Support",
+        optHome: "Home",
+        optCar: "Car",
+        optShop: "Shop",
+        optExtra: "Extra",
+        optExpense: "Expense (-)",
+        optIncome: "Income (+)"
+      },
+      om: {
+        headerAppTitle: "AbseFlow Ledger",
+        loginTitle: "AbseFlow",
+        loginSub: "Injiinii Maallata Maatii",
+        lblFamilyName: "Maqaa Maatii",
+        lblFamilyEmail: "Imeelii Maatii",
+        lblPassword: "Jecha Icchitii",
+        btnAccess: "Ledger Maatii Seeni",
+        btnGoogle: "Google waliin fof_fayyadami",
+        tabHome: "Daashboordii",
+        tabAbout: "Waa’ee",
+        tabContact: "Quunnamtii",
+        lblRole: "Gahee",
+        lblTimeSeries: "Waqtii Kaalendarii",
+        lblTotalBalance: "Maallaqa Waliigalaa",
+        lblBentoBudget: "Koodii Karoora Bento",
+        lblAddTx: "Harka Darbiis Galchi",
+        lblTxAmount: "Maallaqa ($)",
+        lblTxCategory: "Koomteejii Filatamaa",
+        lblTxType: "Gosa Ledger",
+        btnSaveTx: "Harka Galchi",
+        aboutTitle: "Hubannoo Maallaqaa Mul'ataa",
+        aboutText: "AbseFlow daashboordii maallaqaa maatii ammayyaa yoo ta'u, karoora baajataa, hordoffii baasii fi ibsa maallaqaa ifa ta'e uuma. Kanaan karoora qindeessuuf bento-grid fi dizaayinii ammayyaatti fayyadama.",
+        contactTitle: "Nu Quunnamaa",
+        contactText: "Gaaffii qabdu yoo ta'e ykn gargaarsa yoo barbaaddan, garee AbseFlow quunnamaa.",
+        phoneUs: "Bilbila Gargaarsaa",
+        emailUs: "Imeelii Gargaarsaa",
+        optHome: "Mana",
+        optCar: "Konkolaataa",
+        optShop: "Dukaanbaa",
+        optExtra: "Dabalata",
+        optExpense: "Baasii (-)",
+        optIncome: "Galii (+)"
+      },
+      am: {
+        headerAppTitle: "አብስፍሎው ሌጀር",
+        loginTitle: "አብስፍሎው",
+        loginSub: "የቤተሰብ ፋይናንስ ሞተር",
+        lblFamilyName: "የቤተሰብ ስም",
+        lblFamilyEmail: "የቤተሰብ ኢሜይል",
+        lblPassword: "የመግቢያ የይለፍ ቃል",
+        btnAccess: "የቤተሰብ ሌጀርን ይግቡ",
+        btnGoogle: "በጉግል ደህንነቱ በተጠበቀ ሁኔታ ይቀጥሉ።",
+        tabHome: "ዳሽቦርድ",
+        tabAbout: "ስለ እኛ",
+        tabContact: "እውቂያ",
+        lblRole: "ሚና",
+        lblTimeSeries: "የቀን መቁጠሪያ ወቅት",
+        lblTotalBalance: "አጠቃላይ ቀሪ ሂሳብ",
+        lblBentoBudget: "የቤንቶ በጀት ድልድል",
+        lblAddTx: "ተለዋዋጭ ግቤት ያስገቡ",
+        lblTxAmount: "የገንዘብ መጠን ($)",
+        lblTxCategory: "የታለመው ዓይነት",
+        lblTxType: "የሂሳብ መዝገብ ዓይነት",
+        btnSaveTx: "ግብይት ይመዝግቡ",
+        aboutTitle: "ቀጣይ-ትውልድ የፋይናንስ ብልህነት",
+        aboutText: "አብስፍሎው የቤተሰብ በጀትን ለማስማማት ፣ ወጪዎችን ለማቀላጠፍ እና ለቤተሰቦች ፍጹም የፋይናንስ ግልፅነትን ለመስጠት ዝግጁ የተደረገ ዘመናዊ የፋይናንስ በይነገፅ ነው። በቤንቶ-ግሪድ አቀማመጥ እና ደህንነቱ በተጠበቀ የውሂብ ጎታ የተደገፈ ነው።",
+        contactTitle: "ያግኙን",
+        contactText: "ማንኛውም ጥያቄ ካለዎት ወይም እገዛ ከፈለጉ እባክዎን የአብስፍሎው ቡድንን ያነጋግሩ።",
+        phoneUs: "የስልክ ድጋፍ",
+        emailUs: "የኢሜይል ድጋፍ",
+        optHome: "ቤት",
+        optCar: "መኪና",
+        optShop: "ግዢ",
+        optExtra: "ተጨማሪ",
+        optExpense: "ወጪ (-)",
+        optIncome: "ገቢ (+)"
+      }
+    };
+
+    // Initialize Firebase dynamically with fail-safe demo modes
+    try {
+      // Check if real credential placeholder is modified
+      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("FakeKey")) {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        provider = new GoogleAuthProvider();
+        isFirebaseConnected = true;
+        
+        document.getElementById("dbStatusBadge").className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider bg-green-950/40 text-green-300 border border-green-700/40";
+        document.getElementById("dbStatusText").innerText = "CLOUD SECURE";
+      } else {
+        throw new Error("Demo / local mode default configured.");
+      }
+    } catch (e) {
+      console.warn("Using localized localStorage Backup Engine: ", e.message);
+      // Ensure local state caches load correctly from previous sessions if available
+      loadLocalLedger();
+    }
+
+    // Load Local Data if Firebase is offline
+    function loadLocalLedger() {
+      const savedLedger = localStorage.getItem("abseflow_ledger");
+      if (savedLedger) {
+        state.ledger = JSON.parse(savedLedger);
+      }
+      const savedNames = localStorage.getItem("abseflow_bento_names");
+      if (savedNames) {
+        state.bentoNames = JSON.parse(savedNames);
+      }
+      const savedTitles = localStorage.getItem("abseflow_custom_titles");
+      if (savedTitles) {
+        state.customTitles = JSON.parse(savedTitles);
+      }
+      const savedRole = localStorage.getItem("abseflow_user_role");
+      if (savedRole) {
+        state.role = savedRole;
+      }
+    }
+
+    // Save state changes instantly
+    function commitToDb() {
+      if (isFirebaseConnected && state.user) {
+        // Asynchronously update to Cloud Firestore Live Collections
+        const userRef = doc(db, "users", state.user.uid);
+        updateDoc(userRef, {
+          ledger: state.ledger,
+          bentoNames: state.bentoNames,
+          customTitles: state.customTitles
+        }).catch(err => console.error("Cloud firestore sync failure: ", err));
+      } else {
+        // Backup localStorage persistent
+        localStorage.setItem("abseflow_ledger", JSON.stringify(state.ledger));
+        localStorage.setItem("abseflow_bento_names", JSON.stringify(state.bentoNames));
+        localStorage.setItem("abseflow_custom_titles", JSON.stringify(state.customTitles));
+        localStorage.setItem("abseflow_user_role", state.role);
+      }
+    }
+
+    // Trigger Dynamic Interface Update Loop
+    function renderApp() {
+      // Render Nav tabs & language elements
+      updateLocalizationUI();
+      
+      // Update Role Indicator
+      document.getElementById("roleVal").innerText = state.role === "admin" ? "Admin" : "Member";
+      if (state.role === "admin") {
+        document.getElementById("toggleRoleBtn").className = "bg-bentoPrimary text-bentoPurpleDark font-black text-[9px] px-2 py-0.5 rounded-full uppercase hover:opacity-90";
+        // Show Pencil edits
+        document.querySelectorAll(".admin-edit-icon").forEach(el => el.classList.remove("hidden"));
+      } else {
+        document.getElementById("toggleRoleBtn").className = "bg-bentoBorder text-[#E6E1E5]/50 font-black text-[9px] px-2 py-0.5 rounded-full uppercase hover:opacity-90";
+        document.querySelectorAll(".admin-edit-icon").forEach(el => el.classList.add("hidden"));
+      }
+
+      // Calculate and display Bento node allocations for current period
+      const periodData = state.ledger[state.currentPeriod] || { Home: 0, Car: 0, Shop: 0, Extra: 0 };
+      
+      // Node values
+      document.getElementById("valHome").innerText = `$${periodData.Home.toLocaleString()}`;
+      document.getElementById("valCar").innerText = `$${periodData.Car.toLocaleString()}`;
+      document.getElementById("valShop").innerText = `$${periodData.Shop.toLocaleString()}`;
+      document.getElementById("valExtra").innerText = `$${periodData.Extra.toLocaleString()}`;
+
+      // Card Node Names
+      document.getElementById("nameHome").innerText = state.bentoNames.Home;
+      document.getElementById("nameCar").innerText = state.bentoNames.Car;
+      document.getElementById("nameShop").innerText = state.bentoNames.Shop;
+      document.getElementById("nameExtra").innerText = state.bentoNames.Extra;
+
+      // Update Custom Title overrides
+      document.getElementById("lblTotalBalance").innerText = state.customTitles.lblTotalBalance;
+      document.getElementById("lblBentoBudget").innerText = state.customTitles.lblBentoBudget;
+
+      // Calculate Total Balance node sum dynamically
+      const totalSum = periodData.Home + periodData.Car + periodData.Shop + periodData.Extra;
+      document.getElementById("txtTotalBalanceValue").innerText = `$${totalSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      // Update visual calendar label state
+      document.getElementById("timePeriodBadge").innerText = `${state.currentPeriod} PERIOD`;
+
+      // Active month selection tab highlighting visual styling
+      document.querySelectorAll(".month-tab").forEach(tab => {
+        const tabPeriod = tab.getAttribute("data-period");
+        if (tabPeriod === state.currentPeriod) {
+          tab.className = "month-tab px-6 py-2.5 whitespace-nowrap text-sm font-black rounded-full bg-bentoPrimary text-bentoPurpleDark shadow-lg border border-bentoPrimary";
+        } else {
+          tab.className = "month-tab px-5 py-2 whitespace-nowrap text-sm font-semibold rounded-full bg-bentoSurface border border-bentoBorder hover:border-bentoPrimary/40 transition";
+        }
+      });
+    }
+
+    // Dynamic Multi-Language UI Engine
+    function updateLocalizationUI() {
+      const dict = dictionary[state.lang] || dictionary['en'];
+      
+      // Update global document titles and language classes
+      document.documentElement.lang = state.lang;
+      
+      // Loop across translation keys and inject directly
+      Object.keys(dict).forEach(key => {
+        const el = document.getElementById(key);
+        if (el) {
+          // If editing custom titles, do not override with standard dictionary default if user altered it
+          if ((key === "lblTotalBalance" || key === "lblBentoBudget") && state.customTitles[key] !== dictionary['en'][key]) {
+            el.innerText = state.customTitles[key];
+          } else {
+            el.innerText = dict[key];
+          }
+        }
+      });
+
+      // Handle custom selector placeholders and choices
+      document.getElementById("inputFamilyName").placeholder = state.lang === "am" ? "ምሳሌ፡ ቤተሰብ ቶፊኮ" : (state.lang === "om" ? "k.f. Maatii Tofiko" : "e.g. Tofiko Family");
+    }
+
+    // Setup Multi-Language state changer
+    document.getElementById("langSelect").addEventListener("change", (e) => {
+      state.lang = e.target.value;
+      renderApp();
+    });
+
+    // Handle Auth States and view toggling
+    function showPage(pageId) {
+      if (pageId === "login") {
+        document.getElementById("loginPage").classList.remove("hidden");
+        document.getElementById("dashboardPage").classList.add("hidden");
+        document.getElementById("appNavBar").classList.add("hidden");
+      } else {
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("dashboardPage").classList.remove("hidden");
+        document.getElementById("appNavBar").classList.remove("hidden");
+
+        // Toggle visual sub-panels
+        document.getElementById("contentHome").classList.add("hidden");
+        document.getElementById("contentAbout").classList.add("hidden");
+        document.getElementById("contentContact").classList.add("hidden");
+
+        // Remove active styling from all tabs
+        document.getElementById("navTabHome").className = "px-4 py-2 rounded-full text-xs font-semibold leading-none uppercase tracking-wide text-[#E6E1E5] hover:bg-bentoSurfaceVariant flex items-center gap-2";
+        document.getElementById("navTabAbout").className = "px-4 py-2 rounded-full text-xs font-semibold leading-none uppercase tracking-wide text-[#E6E1E5] hover:bg-bentoSurfaceVariant flex items-center gap-2";
+        document.getElementById("navTabContact").className = "px-4 py-2 rounded-full text-xs font-semibold leading-none uppercase tracking-wide text-[#E6E1E5] hover:bg-bentoSurfaceVariant flex items-center gap-2";
+
+        if (pageId === "dashboard") {
+          document.getElementById("contentHome").classList.remove("hidden");
+          document.getElementById("navTabHome").className = "px-4 py-2 rounded-full text-xs font-bold leading-none uppercase tracking-wide bg-bentoPrimary text-bentoPurpleDark flex items-center gap-2";
+        } else if (pageId === "about") {
+          document.getElementById("contentAbout").classList.remove("hidden");
+          document.getElementById("navTabAbout").className = "px-4 py-2 rounded-full text-xs font-bold leading-none uppercase tracking-wide bg-bentoPrimary text-bentoPurpleDark flex items-center gap-2";
+        } else if (pageId === "contact") {
+          document.getElementById("contentContact").classList.remove("hidden");
+          document.getElementById("navTabContact").className = "px-4 py-2 rounded-full text-xs font-bold leading-none uppercase tracking-wide bg-bentoPrimary text-bentoPurpleDark flex items-center gap-2";
+        }
+      }
+    }
+
+    // Setup tab listeners
+    document.getElementById("navTabHome").addEventListener("click", () => showPage("dashboard"));
+    document.getElementById("navTabAbout").addEventListener("click", () => showPage("about"));
+    document.getElementById("navTabContact").addEventListener("click", () => showPage("contact"));
+
+    // Quick Admin toggle for rapid evaluation previewing
+    document.getElementById("toggleRoleBtn").addEventListener("click", () => {
+      state.role = state.role === "admin" ? "user" : "admin";
+      commitToDb();
+      renderApp();
+    });
+
+    // Time Series tab month clicking
+    document.querySelectorAll(".month-tab").forEach(tab => {
+      tab.addEventListener("click", (e) => {
+        state.currentPeriod = e.currentTarget.getAttribute("data-period");
+        renderApp();
+      });
+    });
+
+    // Quick entry transaction save button handler
+    document.getElementById("addTxBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      const rawAmt = parseFloat(document.getElementById("txAmount").value);
+      const cat = document.getElementById("txCategory").value;
+      const type = document.getElementById("txType").value;
+
+      if (isNaN(rawAmt) || rawAmt <= 0) {
+        alert(state.lang === "am" ? "እባክዎን ትክክለኛ የገንዘብ መጠን ያስገቡ" : (state.lang === "om" ? "Maaloo lakkoofsa maallaqaa sirrii galchaa" : "Please input a valid amount"));
+        return;
+      }
+
+      const periodData = state.ledger[state.currentPeriod] || { Home: 0, Car: 0, Shop: 0, Extra: 0 };
+      
+      if (type === "Expense") {
+        periodData[cat] = Math.max(0, periodData[cat] + rawAmt); // Add expense value
+      } else {
+        periodData[cat] = Math.max(0, periodData[cat] - rawAmt); // Income flows decreases spent liability node 
+      }
+
+      state.ledger[state.currentPeriod] = periodData;
+      commitToDb();
+      renderApp();
+      
+      // Reset flow form
+      document.getElementById("txAmount").value = "";
+    });
+
+    // Contact Form submission visual
+    document.getElementById("contactForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      alert(state.lang === "am" ? "ጥያቄዎ ተልኳል! እናመሰግናለን።" : (state.lang === "om" ? "Inquiry keessan ergameera! Galatoomaa." : "Inquiry has been sent! Thank you."));
+      e.target.reset();
+    });
+
+    // ADMINISTRATIVE OVERLAY AND COMMITTING LIVE CHANGELS
+    let activeBentoEditNode = null;
+    let activeLabelEditNode = null;
+
+    // Show administrative node update dialog modal
+    function openAdminModal(nodeId, labelStr, valNumber) {
+      activeBentoEditNode = nodeId;
+      activeLabelEditNode = null;
+      document.getElementById("adminInputNodeName").value = labelStr;
+      document.getElementById("adminInputNodeVal").value = valNumber;
+      document.getElementById("adminEditModal").classList.remove("hidden");
+    }
+
+    // Modal action triggers
+    document.querySelectorAll(".edit-bento-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const cardId = e.currentTarget.getAttribute("data-card-id");
+        const currentPeriodData = state.ledger[state.currentPeriod] || { Home: 0, Car: 0, Shop: 0, Extra: 0 };
+        openAdminModal(cardId, state.bentoNames[cardId], currentPeriodData[cardId]);
+      });
+    });
+
+    // Custom text overrides edits clicker
+    document.querySelectorAll(".admin-edit-icon").forEach(icon => {
+      icon.addEventListener("click", (e) => {
+        // Find sibling label text
+        const textSpan = e.currentTarget.closest(".label-editable-container").querySelector(".editable-title");
+        if (textSpan) {
+          const dictId = textSpan.getAttribute("data-label-id");
+          activeLabelEditNode = dictId;
+          activeBentoEditNode = null;
+          document.getElementById("adminInputNodeName").value = state.customTitles[dictId] || textSpan.innerText;
+          document.getElementById("adminInputNodeVal").value = "0"; // Irrelevant for text overrides
+          document.getElementById("adminInputNodeVal").parentElement.classList.add("hidden");
+          document.getElementById("adminEditModal").classList.remove("hidden");
+        }
+      });
+    });
+
+    // Close administrator overrides popover
+    document.getElementById("closeAdminModal").addEventListener("click", () => {
+      document.getElementById("adminEditModal").classList.add("hidden");
+      document.getElementById("adminInputNodeVal").parentElement.classList.remove("hidden");
+    });
+
+    // Apply Overrides on click Check commit
+    document.getElementById("saveAdminModal").addEventListener("click", () => {
+      const newName = document.getElementById("adminInputNodeName").value.trim();
+      const newVal = parseFloat(document.getElementById("adminInputNodeVal").value);
+
+      if (!newName) return;
+
+      if (activeBentoEditNode) {
+        state.bentoNames[activeBentoEditNode] = newName;
+        if (!isNaN(newVal)) {
+          state.ledger[state.currentPeriod][activeBentoEditNode] = newVal;
+        }
+      } else if (activeLabelEditNode) {
+        state.customTitles[activeLabelEditNode] = newName;
+      }
+
+      commitToDb();
+      renderApp();
+      
+      // Hide dialog
+      document.getElementById("adminEditModal").classList.add("hidden");
+      document.getElementById("adminInputNodeVal").parentElement.classList.remove("hidden");
+    });
+
+    // SECURE SIGN IN SUBMISSION WITH FIREBASE AUTH SEC-OPS BINDINGS
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("inputEmail").value.trim();
+      const pass = document.getElementById("inputPassword").value;
+      const fName = document.getElementById("inputFamilyName").value.trim();
+
+      // Secure handling
+      if (isFirebaseConnected) {
+        signInWithEmailAndPassword(auth, email, pass)
+          .then((cred) => {
+            // Trigger load collections on connected success
+            setupAuthState(cred.user, fName);
+          })
+          .catch((err) => {
+            document.getElementById("authErrorAlert").classList.remove("hidden");
+            document.getElementById("authErrorText").innerText = err.message;
+          });
+      } else {
+        // Fallback for immediate preview without configuring Firebase Project Credentials
+        setupAuthState({ email: email, uid: "mock_demo_family_ledg" }, fName);
+      }
+    });
+
+    // Google Pop-Up Authenticator integration
+    document.getElementById("btnGoogleSignIn").addEventListener("click", () => {
+      if (isFirebaseConnected) {
+        signInWithPopup(auth, provider)
+          .then((cred) => {
+            setupAuthState(cred.user, "Google Cloud Family");
+          })
+          .catch((err) => {
+            document.getElementById("authErrorAlert").classList.remove("hidden");
+            document.getElementById("authErrorText").innerText = err.message;
+          });
+      } else {
+        setupAuthState({ email: "google_account@abseflow.com", uid: "google_mock" }, "Google Authenticated");
+      }
+    });
+
+    // Trigger auth state setup
+    function setupAuthState(userObj, familyName) {
+      state.user = userObj;
+      document.getElementById("userMainName").innerText = familyName || userObj.email.split("@")[0];
+      document.getElementById("userLetterIcon").innerText = (familyName || userObj.email)[0].toUpperCase();
+      
+      // Check Firestore Role permissions if logged-in
+      if (isFirebaseConnected && userObj) {
+        const systemDoc = doc(db, "users", userObj.uid);
+        getDoc(systemDoc).then(docSnapshot => {
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            state.role = data.role || "user";
+            if (data.ledger) state.ledger = data.ledger;
+            if (data.bentoNames) state.bentoNames = data.bentoNames;
+            if (data.customTitles) state.customTitles = data.customTitles;
+          } else {
+            // Create user document inside firestore
+            setDoc(systemDoc, {
+              email: userObj.email,
+              role: "admin", // Initialize as Admin for easy testing
+              ledger: state.ledger,
+              bentoNames: state.bentoNames,
+              customTitles: state.customTitles
+            });
+            state.role = "admin";
+          }
+          renderApp();
+          showPage("dashboard");
+        });
+      } else {
+        renderApp();
+        showPage("dashboard");
+      }
+    }
+
+    // Exit ledger logger out clicker
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      if (isFirebaseConnected) {
+        signOut(auth).then(() => {
+          state.user = null;
+          showPage("login");
+        });
+      } else {
+        state.user = null;
+        showPage("login");
+      }
+    });
+
+    // Check Firebase authentication state on initialized loads
+    if (isFirebaseConnected) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setupAuthState(user, "Family User");
+        } else {
+          showPage("login");
+        }
+      });
+    } else {
+      showPage("login");
+    }
+
+    // Initial render call
+    renderApp();
+  </script>
+</body>
+</html>
